@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import "./Works.css"
-import { useNavigate } from "react-router-dom"
+
 
 const Works = () => {
     const [bookName, setBookName] = useState("")
@@ -9,19 +9,17 @@ const Works = () => {
     useEffect(() => {
         console.log(books)
     }, [books])
+
     const handleSearch = async () => {
         try {
-            const res = await fetch(`https://anapioficeandfire.com/api/books`)
-            const res2 = await res.json();         
+            const res = await fetch(`https://gutendex.com/books/`)
+            const json = await res.json();  
+            setBooks(json);      
         } catch (err) {
             console.error(err)
         }
     }
-    const titles = res2.name;
-    const navigate = useNavigate()
-    const handleClick = (id) => {
-        navigate(`books/${id}`)
-    }
+
     return (
         <div className="container">
             <div className="header">
@@ -32,11 +30,6 @@ const Works = () => {
                 </div>
             </div>
             <h1>Книги</h1>
-            {titles.map((title) => (
-                <div onClick={() => handleClick(title.id)}>
-                    <h4>{title.name}</h4>
-                </div>
-            ))}
         </div>
     )
 }
