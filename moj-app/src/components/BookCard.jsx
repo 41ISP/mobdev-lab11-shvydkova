@@ -4,8 +4,9 @@ const BookCard = (book) => {
     const navigate = useNavigate()
     
     const handleClick = () => {
-
-        navigate(`books/${book.key}`)
+        console.log(book.key, book);
+        
+        navigate(`books/${book.bookKey.split("/")[2]}`)
     }
     return (
         <div onClick={handleClick} className="book-card">

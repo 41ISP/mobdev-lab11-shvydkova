@@ -43,7 +43,7 @@ const Works = () => {
                 {error && <p>{error}</p>}
             </div>
             <h1>Книги</h1>
-            <div className="book-grid">{books && books.map((book) => <BookCard key={book.key}{...book} />)}
+            <div className="book-grid">{books && books.map((book) => <BookCard key={book.key} bookKey={book.key} {...book} />)}
             </div>
 
         </div>

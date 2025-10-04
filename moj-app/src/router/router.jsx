@@ -8,7 +8,7 @@ export const router = createBrowserRouter([
         element: <Works />
     },
     {
-        path: "books/:id",
+        path: "/books/:key",
         element: <Description />
     }
 ])
