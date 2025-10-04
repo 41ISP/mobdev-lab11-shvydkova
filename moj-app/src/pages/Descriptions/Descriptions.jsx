@@ -1,18 +1,33 @@
 import { useEffect, useState } from "react"
 import { Link, useParams } from "react-router-dom"
+import "./Descriptions.css"
 
 const Description = () => {
     const [book, setBook] = useState(undefined)
     const { key } = useParams()
+    const [error, setError] = useState("")
+    const [authors, setAuthors] = useState([])
     useEffect(() => {
         const handleSearch = async () => {
             try {
                 const res = await fetch(`https://openlibrary.org/works/${key}.json`, { mode: "cors" })
                 const json = await res.json();
-                if (json.Response === "False") throw new Error("Не найдена")
+                if (json.Response === "False") throw new Error("Not found")
                 setBook(json);
                 console.log(json);
+
+                const authorNames = []
+                for (const author of json.authors) {
+                    const authorRes = await fetch(`https://openlibrary.org${author.author.key}.json`, { mode: "cors" })
+                    const authorJson = await authorRes.json()
+                    authorNames.push({
+                        key: author.author.key,
+                        name: authorJson.name
+                    })
+                }
+                setAuthors(authorNames)
             } catch (err) {
+                setError(err.message)
                 console.error(err)
             }
         }
@@ -25,30 +40,84 @@ const Description = () => {
         <div className="container">
             <Link to="/" className="back-button">← Back to Search</Link>
             {book && (<div className="book-desc">
-                <div className="book-header">
-                    <div className="info-section">
-                        <h1 className="book-title">{book.title}</h1>
-                        <div className="book-detail">
-                            <span className="detail">{book.description.value}</span>
-                            <span className="detail">Authors:</span>
-                            <div className="book-subjects">
-                                {book.subjects.map((subject) => (
-                                    <span className="detail">{subject}</span>
-                                ))}
+                <div className="header">
+                    <h1 className="book-title">{book.title}</h1>
+                    {book.subtitle && <h2 className="book-subtitle">{book.subtitle}</h2>}
+                </div>
+                <div className="book-content">
+                    <div className="book-cover">
+                        {book.covers && book.covers[0] ? (
+                            <img
+                                src={`https://covers.openlibrary.org/b/id/${book.covers[0]}-L.jpg`}
+                                alt={book.title}
+                                className="cover-image"
+                            />
+                        ) : (
+                            <div className="cover-placeholder">No</div>
+                        )}
+                    </div>
+
+                    <div className="book-info">
+                        <div className="info-section">
+                            <h3>Information</h3>
+                            <div className="info-grid">
+                                <div className="info-item">
+                                    <span className="info-label">Authors:</span>
+                                    <span className="info-value">
+                                        <div className="authors-list">
+                                            {authors.map((author) => (
+                                                <span key={author.key} className="author-link">
+                                                    {author.name}</span>
+                                            ))}
+                                        </div>
+                                    </span>
+                                </div>
+                                <div className="info-item">
+                                    <span className="info-label">Date:</span>
+                                    <span className="info-value">
+                                        {book.first_publish_date || book.publish_date || book.created.value.slice(0, 10) || "-"}
+                                    </span>
+                                </div>
+                                <div className="info-item">
+                                    <span className="info-label">Pages:</span>
+                                    <span className="info-value">
+                                        {book.number_of_pages || "-"}
+                                    </span>
+                                </div>
+                                <div className="info-item">
+                                    <span className="info-label">Язык:</span>
+                                    {book.language && book.language.map((lg) => (
+                                <span key={lg.key} className="info-value">
+                                    {lg.key}</span>
+                            ))} 
+                                </div>
+                                <div className="info-item">
+                                    <span className="info-label">ISBN:</span>
+                                    <span className="info-value">
+                                        {book.isbn ? book.isbn[0] : "-"}
+                                    </span>
+                                </div>
                             </div>
-                            <div className="book-subject_places">
-                                {book.subject_places.map((subject) => (
-                                    <span className="detail">{subject}</span>
-                                ))}
-                            </div>
-                            {book.language && <div className="book-language">
-                                {book.language.map((lg) => (
-                                    <span className="detail">{lg}</span>
-                                ))}
-                            </div>
-                            }
                         </div>
 
+                        {book.description && (
+                            <div className="info-section">
+                                <h3>Description</h3>
+                                <div className="description">
+                                    {book.description.value || book.description}
+                                </div>
+                            </div>
+                        )}
+                        {book.subjects && (
+                            <div className="info-section">
+                                <h3>Themes</h3>
+                                <div className="subjects">
+                                    {book.subjects.map((subject) => (
+                                        <span className="subject-tag">{subject}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}     
                     </div>
                 </div>
             </div>)
