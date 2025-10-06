@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import "./Works.css"
-import BookCard from "../../components/BookCard"
+import BookCard from "../../components/BookCard/BookCard"
 
 
 const Works = () => {
@@ -20,12 +20,13 @@ const Works = () => {
             if (trimmedMovieName.length <= 0) return
 
             const parameters = new URLSearchParams({
-               q: bookName,
+                q: bookName,
             })
-            const res = await fetch(`https://openlibrary.org/search.json?${parameters.toString()}`)
+            const res = await fetch(`https://openlibrary.org/search.json?${parameters.toString()}`, { mode: "cors" })
             const json = await res.json();
             if (json.Response === "False") throw new Error("Не найдена")
             setBooks(json.docs);
+            if (!bookName) return setError(err.message)
         } catch (err) {
             setError(err.message)
             console.error(err)
@@ -42,8 +43,8 @@ const Works = () => {
                 </div>
                 {error && <p>{error}</p>}
             </div>
-            <h1>Книги</h1>
-            <div className="book-grid">{books && books.map((book) => <BookCard key={book.key} bookKey={book.key} {...book} />)}
+            <h1>Books</h1>
+            <div className="book-grid">{books && books.map((book) => <BookCard bookKey={book.key} {...book} />)}
             </div>
 
         </div>

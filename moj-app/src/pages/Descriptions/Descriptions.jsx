@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react"
-import { Link, useParams } from "react-router-dom"
+import { Link, useNavigate, useParams } from "react-router-dom"
 import "./Descriptions.css"
 
 const Description = () => {
     const [book, setBook] = useState(undefined)
     const { key } = useParams()
+    const navigate = useNavigate()
     const [error, setError] = useState("")
     const [authors, setAuthors] = useState([])
     useEffect(() => {
@@ -16,24 +17,28 @@ const Description = () => {
                 setBook(json);
                 console.log(json);
 
-                const authorNames = []
-                for (const author of json.authors) {
-                    const authorRes = await fetch(`https://openlibrary.org${author.author.key}.json`, { mode: "cors" })
-                    const authorJson = await authorRes.json()
-                    authorNames.push({
-                        key: author.author.key,
-                        name: authorJson.name
-                    })
-                }
+                const authorNames = await Promise.all(
+                    json.authors.map(async (author) => {
+                        const authorRes = await fetch(`https://openlibrary.org${author.author.key}.json`, { mode: "cors" })
+                        const authorJson = await authorRes.json()
+                        return ({
+                            key: author.author.key,
+                            name: authorJson.name
+                        })
+                    }))
                 setAuthors(authorNames)
             } catch (err) {
                 setError(err.message)
                 console.error(err)
             }
+
         }
         handleSearch();
     }, [])
 
+    const handleAuthors = (key) => {
+        navigate(`/authors/${key.split("/")[2]}`)
+    }
     useEffect(() => { console.log(book,) }, [book])
 
     return (
@@ -66,12 +71,23 @@ const Description = () => {
                                     <span className="info-value">
                                         <div className="authors-list">
                                             {authors.map((author) => (
-                                                <span key={author.key} className="author-link">
+                                                <span key={author.key} onClick={() => handleAuthors(author.key)} className="author-link">
                                                     {author.name}</span>
                                             ))}
                                         </div>
                                     </span>
                                 </div>
+                                {book.subject_times && (<div className="info-item">
+                                    <span className="info-label">Century:</span>
+                                    <span className="info-value">
+                                        <div className="authors-list">
+                                            {book.subject_times.map((century) => (
+                                                <span>{century}</span>
+                                            ))}
+                                        </div>
+                                    </span>
+                                </div>
+                                )}
                                 <div className="info-item">
                                     <span className="info-label">Date:</span>
                                     <span className="info-value">
@@ -79,24 +95,25 @@ const Description = () => {
                                     </span>
                                 </div>
                                 <div className="info-item">
+                                    <span className="info-label">Revision:</span>
+                                    <span className="info-value">
+                                        {book.revision}
+                                    </span>
+                                </div>
+                                {book.number_of_pages && (<div className="info-item">
                                     <span className="info-label">Pages:</span>
                                     <span className="info-value">
                                         {book.number_of_pages || "-"}
                                     </span>
                                 </div>
-                                <div className="info-item">
-                                    <span className="info-label">Язык:</span>
-                                    {book.language && book.language.map((lg) => (
-                                <span key={lg.key} className="info-value">
-                                    {lg.key}</span>
-                            ))} 
-                                </div>
-                                <div className="info-item">
+                                )}
+                                {book.isbn && (<div className="info-item">
                                     <span className="info-label">ISBN:</span>
                                     <span className="info-value">
                                         {book.isbn ? book.isbn[0] : "-"}
                                     </span>
                                 </div>
+                                )}
                             </div>
                         </div>
 
@@ -117,12 +134,32 @@ const Description = () => {
                                     ))}
                                 </div>
                             </div>
-                        )}     
+                        )}
+                        {book.subject_people && (
+                            <div className="info-section">
+                                <h3>Сharacters</h3>
+                                <div className="subjects">
+                                    {book.subject_people.map((subject) => (
+                                        <span className="subject-tag">{subject}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        {book.subject_places && (
+                            <div className="info-section">
+                                <h3>Places</h3>
+                                <div className="subjects">
+                                    {book.subject_places.map((subject) => (
+                                        <span className="subject-tag">{subject}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
-            </div>)
+            </div >)
             }
-        </div>
+        </div >
     )
 }
 export default Description

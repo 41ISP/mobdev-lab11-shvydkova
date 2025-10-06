@@ -1,11 +1,10 @@
-import { useNavigate} from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import "./BookCard.css"
 const BookCard = (book) => {
     const navigate = useNavigate()
-    
+
     const handleClick = () => {
         console.log(book.key, book);
-        
         navigate(`books/${book.bookKey.split("/")[2]}`)
     }
     return (
@@ -14,7 +13,7 @@ const BookCard = (book) => {
                 <div className="book-title">{book.title}</div>
                 <div className="book-meta">
                     <span className="book-year">{book.first_publish_year}</span>
-                    <span className="book-year">{book.author_name[0]} ...</span>
+                    {book.author_name && (<span className="book-year">{book.author_name[0]} ...</span> )}
                 </div>
             </div>
         </div>
