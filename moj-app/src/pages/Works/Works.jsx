@@ -14,6 +14,7 @@ const Works = () => {
 
     const handleSearch = async () => {
         try {
+            setBookName("")
             setBooks(undefined)
             setError("")
             const trimmedMovieName = bookName.trim();
@@ -26,8 +27,8 @@ const Works = () => {
             const json = await res.json();
             if (json.Response === "False") throw new Error("Не найдена")
             setBooks(json.docs);
-            if (!bookName) return setError(err.message)
         } catch (err) {
+            if(!bookName) return setError("no such book")
             setError(err.message)
             console.error(err)
         }
